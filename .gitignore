@@ -1,0 +1,4 @@
+.vagrant
+Vagrantfile
+vars.yml
+.DS_Store

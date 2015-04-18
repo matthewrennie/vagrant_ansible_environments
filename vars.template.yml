@@ -1,0 +1,25 @@
+java:
+  jce_extract_dir: ~/Downloads/UnlimitedJCEPolicy
+
+artifactory:
+  realm: Artifactory Realm
+  repo: Some Repo
+  protocol: https
+  domain: ci.somerep.com
+  path: /artifactory/repo/
+  username: repousername
+  password: "repopassword"
+
+data_file_config:
+  bucket: somebucket
+  remote_path: /somepath
+  files:
+    - { file: "file1.tar.bz2", database: "file1" }
+    - { file: "file2", database: "file2" }
+  loader:
+    username: loaderusername
+    password: loaderpassword
+
+aws:
+  access_key: somekey
+  secret_key: somesecret

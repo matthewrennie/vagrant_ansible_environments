@@ -1,0 +1,53 @@
+- name: ensure required packages are installed for data loading
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - python-boto
+
+- name: create directories for test data files
+  file: path=/work/data state=directory
+
+- name: download data file
+  s3: bucket={{data_file_config.bucket}} object="{{data_file_config.remote_path}}/{{item.file}}" dest="/work/data/{{item.file}}" mode=get aws_access_key={{aws.access_key}} aws_secret_key={{aws.secret_key}} overwrite=false
+  with_items: data_file_config.files
+
+- name: extract the files
+  unarchive: src=/work/data/{{item.file}} dest=/work/data copy=no creates="/work/data/{{item.database}}.done"
+  with_items: data_file_config.files
+
+- name: restore database
+  command: "mongorestore --db {{item.database}} /work/data/dump/{{item.database}}"
+  args:
+    creates: "/work/data/{{item.database}}.done"
+  with_items: data_file_config.files
+
+- name: setup user access - remove existing
+  command: "mongo --eval 'db.dropUser(\"{{data_file_config.loader.username}}\")' {{item.database}}"
+  args:
+    creates: "/work/data/{{item.database}}.done"
+  with_items: data_file_config.files
+
+- name: setup user access - add users
+  command: "mongo --eval 'db.createUser( { user: \"{{data_file_config.loader.username}}\", pwd: \"{{data_file_config.loader.password}}\", roles: [ \"readWrite\" ] } )' {{item.database}}"
+  args:
+    creates: "/work/data/{{item.database}}.done"
+  with_items: data_file_config.files
+
+- name: mark load as done
+  command: "touch /work/data/{{item.database}}.done"
+  args:
+    creates: "/work/data/{{item.database}}.done"
+  with_items: data_file_config.files
+
+- name: cleanup dump
+  command: rm -r /work/data/dump/{{item.database}}
+  with_items: data_file_config.files  
+
+- name: setup userdata
+  command: "mongo --eval 'db.addUser( { user: \"{{data_file_config.loader.username}}\", pwd: \"{{data_file_config.loader.password}}\", roles: [ \"readWrite\" ] } )' userdata"
+  args:
+    creates: /work/data/userdata.done
+
+- name: mark userdata as done
+  command: touch /work/data/userdata.done
+  args:
+    creates: /work/data/userdata.done

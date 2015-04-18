@@ -1,0 +1,7 @@
+credentials += Credentials("{{artifactory.realm}}", "{{artifactory.domain}}", "{{artifactory.username}}", "{{artifactory.password}}")
+ 
+resolvers += "{{artifactory.repo}}" at "{{artifactory.protocol}}://{{artifactory.domain}}{{artifactory.path}}"
+ 
+externalResolvers <<= resolvers map { rs =>
+        Resolver.withDefaultResolvers(rs, mavenCentral = false)
+}

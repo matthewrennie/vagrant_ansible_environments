@@ -1,0 +1,21 @@
+---
+
+- include: external_work_blockdev.yml
+  when: external_work_blockdev
+
+- name: Install required system packages.
+  apt: pkg={{item}} state=installed update-cache=yes
+  with_items:
+    - nodejs
+    - npm
+    - httpie
+
+- name: symlink nodejs
+  command: ln -s /usr/bin/nodejs /usr/bin/node
+  args:
+    creates: /usr/bin/node
+
+- include: java7.yml
+
+- name: install sbt
+  include: sbt.yml

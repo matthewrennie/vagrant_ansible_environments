@@ -1,0 +1,32 @@
+---
+# mounts an external block storage device for work (such as an encrypted device)
+- name: create work storage mount point
+  file: path=/work state=directory owner={{username}} group={{groupname}}
+
+- name: create filesystem on work storage
+  command: mkfs -t ext4 /dev/xvdc
+  args:
+    creates: ~/fs.done
+
+- name: mount work storage
+  command: mount /dev/xvdc /work
+  args:
+    creates: ~/fs.done
+
+- name: add work storage to fstab
+  lineinfile:
+    dest: /etc/fstab
+    create: yes
+    state: present
+    line: "/dev/xvdc       /work   ext4    defaults,nofail        0       2"
+    regexp: "^/dev/xvdc"
+
+- name: set correct ownership
+  command: chown -R {{username}} /work
+  args:
+    creates: ~/fs.done
+
+- name: mark file system complete
+  command: touch ~/fs.done
+  args:
+    creates: ~/fs.done

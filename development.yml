@@ -1,0 +1,26 @@
+---
+- hosts: localstandalones
+  vars_files:
+    - vars.yml
+  vars:
+    username: vagrant
+    groupname: vagrant
+  sudo: yes
+  roles:
+    - common
+    - cache
+    - database
+  tasks:
+    - include: playbooks/data_loader.yml
+
+- hosts: ec2distributeds
+  vars_files:
+    - vars.yml
+  vars:
+    username: ubuntu
+    groupname: ubuntu
+  sudo: yes
+  roles:
+    - { role: common, external_work_blockdev: true }
+    - { role: cache, toolsonly: true }
+    - { role: database, shellonly: true }

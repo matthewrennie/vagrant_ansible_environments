@@ -1,0 +1,29 @@
+---
+- name: create directories for sbt repo settings
+  file: path={{item}} state=directory owner={{username}} group={{groupname}}
+  with_items:
+    - ~/.sbt
+    - ~/.sbt/0.13
+  sudo: no
+
+- name: create sbt repo settings
+  template: src=templates/repo.j2 dest=~/.sbt/0.13/repo.sbt owner={{username}} group={{groupname}} mode=0644
+  sudo: no
+
+- name: download pkg
+  get_url: url=https://dl.bintray.com/sbt/debian/sbt-0.13.5.deb dest=/tmp/sbt-0.13.5.deb
+
+- name: Update APT package cache
+  action: apt update_cache=yes
+
+- name: install using dkpg
+  command: dpkg -i /tmp/sbt-0.13.5.deb
+
+- name: setup sbtconfig
+  lineinfile:
+    dest: ~/.sbtconfig
+    create: yes
+    state: present
+    line: 'SBT_OPTS="-Xmx2G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:PermSize=256M -XX:MaxPermSize=512M"'
+    regexp: "^SBT_OPTS"
+  sudo: no

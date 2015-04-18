@@ -1,0 +1,30 @@
+---
+- command: apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+
+- name: add mongodb repo
+  apt_repository:
+    repo: "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen"
+    state: present
+
+- name: Update APT package cache
+  action: apt update_cache=yes
+
+- name: install mongodb
+  apt:
+    pkg: "mongodb-org={{version}}"
+    state: present
+    force: yes
+  when: not shellonly
+
+- name: install mongodb shell
+  apt:
+    pkg: "mongodb-org-shell={{version}}"
+    state: present
+    force: yes
+  when: shellonly
+
+- name: ensure mongodb is running
+  service:
+    name: mongod
+    state: started
+  when: not shellonly
