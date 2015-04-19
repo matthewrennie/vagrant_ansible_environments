@@ -1,0 +1,43 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+NODE_COUNT = 1
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.box_check_update = false
+  config.vm.network "private_network", ip: "192.168.33.10"
+  config.ssh.forward_agent = true
+
+  config.vm.provider "virtualbox" do |v|
+    v.name = "spark"
+    v.gui = false
+    v.memory = 2048
+    v.cpus = 1
+  end  
+
+  services = Array.new
+  NODE_COUNT.times do |i|
+    service_id = "service#{i}"
+    services << service_id
+    config.vm.define service_id do |service|    
+    end
+  end
+
+  config.vm.provision :ansible do |ansible|
+
+    ansible.groups = {
+      "sparks" => services,
+      "all_groups:children" => ["sparks"]
+    }
+
+    ansible.playbook = "environments.yml"
+    
+    ansible.verbose = "vvvv"
+    ansible.limit = 'all'
+
+  end
+
+end

@@ -1,0 +1,11 @@
+---
+- hosts: sparks
+  vars_files:
+    - vars.yml
+  vars:
+    username: vagrant
+    groupname: vagrant
+  sudo: yes  
+  roles:
+    - common
+    - hadoop

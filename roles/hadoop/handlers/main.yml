@@ -1,0 +1,8 @@
+---
+- name: service hadoop start all
+  command: /usr/local/hadoop/sbin/start-all.sh
+  sudo_user: hduser
+
+- name: service hadoop start hdfs
+  command: /usr/local/hadoop/sbin/start-dfs.sh
+  sudo_user: hduser
