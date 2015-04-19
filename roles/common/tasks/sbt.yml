@@ -7,7 +7,7 @@
   sudo: no
 
 - name: create sbt repo settings
-  template: src=templates/repo.j2 dest=~/.sbt/0.13/repo.sbt owner={{username}} group={{groupname}} mode=0644
+  template: src=repo.j2 dest=~/.sbt/0.13/repo.sbt owner={{username}} group={{groupname}} mode=0644
   sudo: no
 
 - name: download pkg
