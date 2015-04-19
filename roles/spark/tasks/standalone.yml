@@ -1,0 +1,44 @@
+---
+- name: create spark
+  group: name=spark state=present
+
+- name: create spark user
+  user: name=spark group=spark state=present
+
+- name: generate ssh keys
+  shell: ssh-keygen -f ~/.ssh/id_rsa -t rsa -P ""
+  args:
+    creates: ~/.ssh/id_rsa.pub
+  sudo_user: spark
+
+- name: add key to authorized_keys
+  shell: cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+  args:
+    creates: ~/.ssh/authorized_keys
+  sudo_user: spark
+
+- name: retrieve spark
+  get_url: url=http://d3kbcqa49mib13.cloudfront.net/spark-{{spark_version}}-bin-hadoop{{hadoop_version}}.tgz dest=/tmp/spark.tgz
+
+- unarchive: src=/tmp/spark.tgz dest=/tmp copy=no creates=/tmp/spark-{{spark_version}}-bin-hadoop{{hadoop_version}}
+
+- command: cp -R /tmp/spark-{{spark_version}}-bin-hadoop{{hadoop_version}} /usr/local/spark
+  args:
+    creates: /usr/local/spark
+
+- file: path=/usr/local/spark recurse=true owner=spark group=spark
+
+- name: set spark environment variables
+  lineinfile:
+    dest: ~/.bashrc
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^#SPARK VARIABLES START', line: '#SPARK VARIABLES START' }
+    - { regexp: '^export JAVA_HOME', line: 'export JAVA_HOME=/usr/lib/jvm/java-7-oracle' }
+    - { regexp: '^export SPARK_HOME', line: 'export SPARK_HOME=/usr/local/spark' }
+    - { regexp: '^#SPARK VARIABLES END', line: '#SPARK VARIABLES END' }
+  sudo_user: spark
+
+- name: create spark-env
+  template: src=spark-env.sh.j2 dest=/usr/local/spark/conf/spark-env.sh owner=spark group=spark

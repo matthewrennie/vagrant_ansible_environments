@@ -7,5 +7,6 @@
     groupname: vagrant
   sudo: yes  
   roles:
-    - common
-    - hadoop
+    # - common
+    # - hadoop
+    - spark

@@ -1,0 +1,115 @@
+---
+- name: create hadoop
+  group: name=hadoop state=present
+
+- name: create hadoop user
+  user: name=hduser group=hadoop state=present
+
+- name: generate ssh keys
+  shell: ssh-keygen -f ~/.ssh/id_rsa -t rsa -P ""
+  args:
+    creates: ~/.ssh/id_rsa.pub
+  sudo_user: hduser
+
+- name: add key to authorized_keys
+  shell: cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+  args:
+    creates: ~/.ssh/authorized_keys
+  sudo_user: hduser
+
+- name: disable known hosts for localhost
+  lineinfile:
+    dest: ~/.ssh/config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    create: yes
+  with_items:
+    - { regexp: '^NoHostAuthenticationForLocalhost', line: 'NoHostAuthenticationForLocalhost yes' }
+    - { regexp: '^Host 0.0.0.0', line: 'Host 0.0.0.0' }
+    - { regexp: '^    StrictHostKeyChecking', line: '    StrictHostKeyChecking no' }
+  sudo_user: hduser
+
+- name: disable ipv6
+  sysctl: name="net.ipv6.conf.all.disable_ipv6" value=1 sysctl_set=yes state=present reload=yes
+  sysctl: name="net.ipv6.conf.default.disable_ipv6" value=1 sysctl_set=yes state=present reload=yes
+  sysctl: name="net.ipv6.conf.lo.disable_ipv6" value=1 sysctl_set=yes state=present reload=yes
+
+- name: retrieve hadoop
+  get_url: url=http://mirrors.advancedhosters.com/apache/hadoop/core/hadoop-2.6.0/hadoop-2.6.0.tar.gz dest=/tmp/hadoop-2.6.0.tar.gz
+
+- unarchive: src=/tmp/hadoop-2.6.0.tar.gz dest=/tmp copy=no creates=/tmp/hadoop-2.6.0
+
+- command: cp -R /tmp/hadoop-2.6.0 /usr/local/hadoop
+  args:
+    creates: /usr/local/hadoop
+
+- file: path=/usr/local/hadoop recurse=true owner=hduser group=hadoop
+
+- name: set hduser environment variables
+  lineinfile:
+    dest: ~/.bashrc
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^#HADOOP VARIABLES START', line: '#HADOOP VARIABLES START' }
+    - { regexp: '^export JAVA_HOME', line: 'export JAVA_HOME=/usr/lib/jvm/java-7-oracle' }
+    - { regexp: '^export HADOOP_INSTALL', line: 'export HADOOP_INSTALL=/usr/local/hadoop' }
+    - { regexp: '^export PATH=$PATH:$HADOOP_INSTALL', line: 'export PATH=$PATH:$HADOOP_INSTALL/bin' }
+    - { regexp: '^export HADOOP_MAPRED_HOME', line: 'export HADOOP_MAPRED_HOME=$HADOOP_INSTALL' }
+    - { regexp: '^export HADOOP_COMMON_HOME', line: 'export HADOOP_COMMON_HOME=$HADOOP_INSTALL' }
+    - { regexp: '^export HADOOP_HDFS_HOME', line: 'export HADOOP_HDFS_HOME=$HADOOP_INSTALL' }
+    - { regexp: '^export YARN_HOME', line: 'export YARN_HOME=$HADOOP_INSTALL' }
+    - { regexp: '^export HADOOP_COMMON_LIB', line: 'export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_INSTALL/lib/native' }
+    - { regexp: '^export HADOOP_OPTS', line: 'export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib"' }
+    - { regexp: '^#HADOOP VARIABLES END', line: '#HADOOP VARIABLES END' }
+  sudo_user: hduser
+
+- name: set java env in hadoop-env.sh
+  lineinfile:
+    dest: /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^export JAVA_HOME=', line: 'export JAVA_HOME=/usr/lib/jvm/java-7-oracle' }
+  sudo_user: hduser
+
+- name: create hadoop temporary directory
+  command: mkdir -p /app/hadoop/tmp
+  args:
+    creates: /app/hadoop/tmp
+
+- file: path=/app/hadoop/tmp recurse=true owner=hduser group=hadoop
+
+- name: override core site config
+  template: src=core-site.xml.j2 dest=/usr/local/hadoop/etc/hadoop/core-site.xml owner=hduser group=hadoop
+
+- name: create mapred-site
+  template: src=mapred-site.xml.j2 dest=/usr/local/hadoop/etc/hadoop/mapred-site.xml owner=hduser group=hadoop
+
+- name: create name node directory
+  command: mkdir -p /usr/local/hadoop_store/hdfs/namenode
+  args:
+    creates: /usr/local/hadoop_store/hdfs/namenode
+
+- name: create data node directory
+  command: mkdir -p /usr/local/hadoop_store/hdfs/datanode
+  args:
+    creates: /usr/local/hadoop_store/hdfs/datanode
+
+- file: path=/usr/local/hadoop_store recurse=true owner=hduser group=hadoop
+
+- name: create hdfs-site
+  template: src=hdfs-site.xml.j2 dest=/usr/local/hadoop/etc/hadoop/hdfs-site.xml owner=hduser group=hadoop
+
+- name: format the hadoop file system
+  command: /usr/local/hadoop/bin/hadoop namenode -format
+  args:
+    chdir: ~/
+    creates: ~/hdfsformat.done
+  sudo_user: hduser
+
+- name: mark format as done
+  command: touch ~/hdfsformat.done
+  args:
+    creates: ~/hdfsformat.done
+  sudo_user: hduser
