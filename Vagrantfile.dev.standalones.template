@@ -10,6 +10,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box_check_update = false
   config.vm.network "private_network", ip: "192.168.33.10"
   config.ssh.forward_agent = true
+  config.vm.synced_folder "/Users/someuser/Work", "/work", :nfs => true
 
   config.vm.provider "virtualbox" do |v|
     v.name = "scala_env_localdev"

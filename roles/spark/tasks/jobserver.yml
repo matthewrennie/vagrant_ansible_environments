@@ -1,0 +1,24 @@
+---
+
+- name: retrieve jobserver
+  get_url: url=https://github.com/spark-jobserver/spark-jobserver/archive/v{{jobserver_version}}.tar.gz dest=/tmp/spark-jobserver.tgz
+
+- unarchive: src=/tmp/spark-jobserver.tgz dest=/tmp copy=no creates=/tmp/spark-jobserver-{{jobserver_version}}
+
+# - name: install git
+#   apt: pkg=git state=installed update-cache=yes
+
+# - name: ensure github.com is a known host
+#   lineinfile:
+#     dest: ~/.ssh/known_hosts
+#     create: yes
+#     state: present
+#     line: "{{lookup('pipe', 'ssh-keyscan -t rsa github.com')}}"
+#     regexp: "^github\\.com"
+
+# - name: checkout application source
+#   git: repo=git@github.com:spark-jobserver/spark-jobserver.git dest=/tmp/spark-jobserver accept_hostkey=true
+#   sudo: no
+
+- name: create deployment script
+  template: src=jobserver.local.sh.j2 dest=/tmp/spark-jobserver-{{jobserver_version}}/config/local.sh

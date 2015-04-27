@@ -1,0 +1,24 @@
+---
+- get_url: url=https://github.com/mongodb/mongo-hadoop/releases/download/r{{mongodb_connector.version}}/flume-{{mongodb_connector.version}}.jar dest=/usr/local/hadoop/lib/flume-{{mongodb_connector.version}}.jar
+
+- file: path=/usr/local/hadoop/lib/flume-{{mongodb_connector.version}}.jar owner=hduser group=hadoop
+
+- get_url: url=https://github.com/mongodb/mongo-hadoop/releases/download/r{{mongodb_connector.version}}/mongo-hadoop-core-{{mongodb_connector.version}}.jar dest=/usr/local/hadoop/lib/mongo-hadoop-core-{{mongodb_connector.version}}.jar
+
+- file: path=/usr/local/hadoop/lib/mongo-hadoop-core-{{mongodb_connector.version}}.jar owner=hduser group=hadoop
+
+- get_url: url=https://github.com/mongodb/mongo-hadoop/releases/download/r{{mongodb_connector.version}}/mongo-hadoop-hive-{{mongodb_connector.version}}.jar dest=/usr/local/hadoop/lib/mongo-hadoop-hive-{{mongodb_connector.version}}.jar
+
+- file: path=/usr/local/hadoop/lib/mongo-hadoop-hive-{{mongodb_connector.version}}.jar owner=hduser group=hadoop
+
+- get_url: url=https://github.com/mongodb/mongo-hadoop/releases/download/r{{mongodb_connector.version}}/mongo-hadoop-pig-{{mongodb_connector.version}}.jar dest=/usr/local/hadoop/lib/mongo-hadoop-pig-{{mongodb_connector.version}}.jar
+
+- file: path=/usr/local/hadoop/lib/mongo-hadoop-pig-{{mongodb_connector.version}}.jar owner=hduser group=hadoop
+
+- get_url: url=https://github.com/mongodb/mongo-hadoop/releases/download/r{{mongodb_connector.version}}/mongo-hadoop-streaming-{{mongodb_connector.version}}.jar dest=/usr/local/hadoop/lib/mongo-hadoop-streaming-{{mongodb_connector.version}}.jar
+
+- file: path=/usr/local/hadoop/lib/mongo-hadoop-streaming-{{mongodb_connector.version}}.jar owner=hduser group=hadoop
+
+- get_url: url=https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongo-java-driver/{{mongodb_connector.driver_version}}/mongo-java-driver-{{mongodb_connector.driver_version}}.jar dest=/usr/local/hadoop/lib/mongo-java-driver-{{mongodb_connector.driver_version}}.jar
+
+- file: path=/usr/local/hadoop/lib/mongo-java-driver-{{mongodb_connector.driver_version}}.jar owner=hduser group=hadoop
