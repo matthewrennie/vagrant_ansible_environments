@@ -1,0 +1,27 @@
+---
+# modified https://gist.github.com/owainlewis/6069582 to install jdk 8
+- name: ensure required packages are installed for Java 8
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - python-software-properties
+ 
+- name: Add Java repository to sources
+  action: apt_repository repo='ppa:webupd8team/java'
+ 
+- name: Autoaccept license for Java
+  action: shell echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+ 
+- name: Update APT package cache
+  action: apt update_cache=yes
+ 
+- name: Install Java 8
+  action: apt pkg=oracle-java8-installer state=latest install_recommends=yes
+ 
+- name: Set Java 8 Env
+  action: apt pkg=oracle-java8-set-default state=latest install_recommends=yes
+
+- name: install JCE
+  copy: src="{{java.jce_extract_dir}}/{{item}}" dest="/usr/lib/jvm/java-8-oracle/jre/lib/security/{{item}}" force=yes
+  with_items:
+    - local_policy.jar
+    - US_export_policy.jar

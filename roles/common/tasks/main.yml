@@ -15,7 +15,7 @@
   args:
     creates: /usr/bin/node
 
-- include: java7.yml
+- include: java8.yml
 
 - name: install sbt
   include: sbt.yml
