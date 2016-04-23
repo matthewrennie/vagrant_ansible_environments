@@ -1,0 +1,20 @@
+---
+
+- name: Install phantom dependencies
+  apt: pkg={{item}} state=installed update-cache=yes
+  with_items:
+    - libfontconfig
+    - libfontconfig-dev
+    - libfreetype6-dev
+
+- name: Download phantomjs
+  get_url: url=https://phantomjs.googlecode.com/files/phantomjs-1.9.2-linux-x86_64.tar.bz2 dest=/tmp/phantomjs.tar.bz2
+
+- name: Move phantomjs to opt
+  shell: mv /tmp/phantomjs.tar.bz2 /opt
+
+- name: Extract phantom
+  unarchive: src=/opt/phantomjs.tar.bz2 dest=/opt copy=no
+
+- name: Softlink phantom
+  shell: ln -s /opt/phantomjs-1.9.2-linux-x86_64/bin/phantomjs /usr/local/bin/phantomjs

@@ -10,6 +10,7 @@
     - common
     - cache
     - database
+    - automation
   tasks:
     - include: playbooks/data_loader.yml
 
