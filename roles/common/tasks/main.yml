@@ -9,6 +9,7 @@
     - nodejs
     - npm
     - httpie
+    - uuid
 
 - name: symlink nodejs
   command: ln -s /usr/bin/nodejs /usr/bin/node
